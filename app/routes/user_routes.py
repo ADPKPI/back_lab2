@@ -1,35 +1,54 @@
-from flask import request, jsonify, abort
-from app import app
-from app.utils.file_handler import load_data, save_data
+from flask_smorest import Blueprint
+from app.models import db, User
+from app.models import UserSchema
 
-USER_FILE = 'users.json'
-users = load_data(USER_FILE)
+# Обєкт для обобліку користувачів
+blp = Blueprint('users', 'users', url_prefix='/user', description='Operations on users')
 
-@app.route('/user', methods=['POST'])
-def create_user():
-    new_user = {
-        'id': len(users) + 1,
-        'name': request.json.get('name')
-    }
-    users.append(new_user)
-    save_data(USER_FILE, users)
-    return jsonify(new_user), 201
+# Маршрут створення користувача
+@blp.route('/', methods=['POST'])
+@blp.arguments(UserSchema)
+@blp.response(201, UserSchema)
+def create_user(user_data):
+    """
+    Створення нового користувача
+    """
+    user = User(**user_data)
+    db.session.add(user)
+    db.session.commit()
+    return user
 
-@app.route('/user/<int:user_id>', methods=['GET'])
-def get_user(user_id):
-    user = next((u for u in users if u['id'] == user_id), None)
-    if not user:
-        abort(404)
-    return jsonify(user)
-
-@app.route('/users', methods=['GET'])
+# Маршрут отримання усіх користувачів
+@blp.route('/', methods=['GET'])
+@blp.response(200, UserSchema(many=True))
 def get_users():
-    return jsonify(users)
+    """
+    Отримати усіх користувачів
+    """
+    users = User.query.all()
+    return users
 
+# Маршрут отримання користувача за ID
+@blp.route('/<int:user_id>', methods=['GET'])
+@blp.response(200, UserSchema)
+def get_user(user_id):
+    """
+    Отримати користувача за його ID
+    """
+    user = User.query.get_or_404(user_id)
+    return user
 
-@app.route('/user/<int:user_id>', methods=['DELETE'])
+# Маршрут видалення користувача за ID
+@blp.route('/<int:user_id>', methods=['DELETE'])
+@blp.response(204)
 def delete_user(user_id):
-    global users
-    users = [u for u in users if u['id'] != user_id]
-    save_data(USER_FILE, users)
+    """
+    Видалити користувача за його ID
+    """
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
     return '', 204
+
+# Реєстрація обєкта Blueprint
+user_bp = blp
