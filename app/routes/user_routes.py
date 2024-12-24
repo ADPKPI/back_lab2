@@ -1,25 +1,15 @@
 from flask_smorest import Blueprint
 from app.models import db, User
 from app.models import UserSchema
+from flask_jwt_extended import jwt_required
+
 
 # Обєкт для обобліку користувачів
 blp = Blueprint('users', 'users', url_prefix='/user', description='Operations on users')
 
-# Маршрут створення користувача
-@blp.route('/', methods=['POST'])
-@blp.arguments(UserSchema)
-@blp.response(201, UserSchema)
-def create_user(user_data):
-    """
-    Створення нового користувача
-    """
-    user = User(**user_data)
-    db.session.add(user)
-    db.session.commit()
-    return user
-
 # Маршрут отримання усіх користувачів
 @blp.route('/', methods=['GET'])
+@jwt_required()
 @blp.response(200, UserSchema(many=True))
 def get_users():
     """
@@ -30,6 +20,7 @@ def get_users():
 
 # Маршрут отримання користувача за ID
 @blp.route('/<int:user_id>', methods=['GET'])
+@jwt_required()
 @blp.response(200, UserSchema)
 def get_user(user_id):
     """
@@ -40,6 +31,7 @@ def get_user(user_id):
 
 # Маршрут видалення користувача за ID
 @blp.route('/<int:user_id>', methods=['DELETE'])
+@jwt_required()
 @blp.response(204)
 def delete_user(user_id):
     """

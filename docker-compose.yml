@@ -24,10 +24,11 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      PORT: "10000"
+      PORT: "10001"
       DATABASE_URL: "postgresql://lab_user:lab_password@db:5432/lab_db"
+      JWT_SECRET_KEY: ""
     ports:
-      - "10000:10000"
+      - "10001:10001"
     depends_on:
       db:
         condition: service_healthy

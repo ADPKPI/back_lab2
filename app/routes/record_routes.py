@@ -3,12 +3,15 @@ from flask.views import MethodView
 from app.models import db, Record, Category
 from app.models import RecordSchema
 from flask import abort
+from flask_jwt_extended import jwt_required
+
 
 # Обгортка для керування записами
 blp = Blueprint('records', 'records', url_prefix='/record', description='Operations on records')
 
 @blp.route('/')
 class RecordList(MethodView):
+    @jwt_required()
     @blp.response(200, RecordSchema(many=True))
     def get(self):
         """Отримати усі записи"""
@@ -16,6 +19,7 @@ class RecordList(MethodView):
         return records
 
     @blp.arguments(RecordSchema)
+    @jwt_required()
     @blp.response(201, RecordSchema)
     def post(self, record_data):
         """Створити новий запис"""
@@ -39,12 +43,14 @@ class RecordList(MethodView):
 
 @blp.route('/<int:record_id>')
 class RecordResource(MethodView):
+    @jwt_required()
     @blp.response(200, RecordSchema)
     def get(self, record_id):
         """Отримати запис за ID"""
         record = Record.query.get_or_404(record_id)
         return record
 
+    @jwt_required()
     @blp.response(204)
     def delete(self, record_id):
         """Видалити запис"""

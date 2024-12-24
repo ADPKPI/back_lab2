@@ -2,12 +2,15 @@ from flask_smorest import Blueprint
 from flask.views import MethodView
 from app.models import db, Category, CategorySchema
 from flask import request, abort
+from flask_jwt_extended import jwt_required
+
 
 # Обгортка для керування категоріями
 blp = Blueprint('categories', 'categories', description='Operations on categories')
 
 @blp.route('/')
 class CategoryList(MethodView):
+    @jwt_required()
     @blp.response(200, CategorySchema(many=True))
     def get(self):
         """Отримати усі категорії (загальні та користувацькі)
@@ -22,6 +25,7 @@ class CategoryList(MethodView):
         return categories
 
     @blp.arguments(CategorySchema)
+    @jwt_required()
     @blp.response(201, CategorySchema)
     def post(self, category_data):
         """Створити нову категорію
@@ -50,6 +54,7 @@ class CategoryList(MethodView):
 
 @blp.route('/<int:category_id>')
 class CategoryResource(MethodView):
+    @jwt_required()
     @blp.response(200, CategorySchema)
     def get(self, category_id):
         """Отримати категорію за ID
@@ -68,6 +73,7 @@ class CategoryResource(MethodView):
         return category
 
     @blp.response(204)
+    @jwt_required()
     def delete(self, category_id):
         """Видалити користувацьку категорію
         """

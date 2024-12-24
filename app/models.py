@@ -8,6 +8,8 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)  # Унікальний ідентифікатор користувача
     name = db.Column(db.String(128), nullable=False)  # Ім'я користувача
+    password = db.Column(db.String(128), nullable=False)  # Пароль користувача
+
 
 # Модель категорії
 class Category(db.Model):
@@ -30,6 +32,7 @@ class Record(db.Model):
 class UserSchema(Schema):
     id = fields.Int(dump_only=True)  # Унікальний ідентифікатор (тільки для читання)
     name = fields.Str(required=True)  # Ім'я користувача (обов'язкове)
+    password = fields.Str(load_only=True, required=True)
 
 # Схема для валідації категорій
 class CategorySchema(Schema):
